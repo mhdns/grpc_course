@@ -6,6 +6,8 @@ import (
 	"grpc_course/greet/greetpb"
 	"log"
 	"net"
+	"strconv"
+	"time"
 
 	"google.golang.org/grpc"
 )
@@ -20,6 +22,20 @@ func (*server) Greet(ctx context.Context, req *greetpb.GreetRequest) (*greetpb.G
 	}
 
 	return res, nil
+}
+
+func (*server) GreetMany(req *greetpb.GreetManyRequest, stream greetpb.GreetService_GreetManyServer) error {
+	fname := req.GetGreeting().GetFirstName()
+	for i := 1; i < 11; i++ {
+		result := "Hello " + fname + " number " + strconv.Itoa(i)
+		res := &greetpb.GreetManyResponse{
+			Result: result,
+		}
+		stream.Send(res)
+		time.Sleep(time.Second)
+	}
+
+	return nil
 }
 
 func main() {

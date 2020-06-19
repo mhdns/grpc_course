@@ -13,7 +13,14 @@ message GreetRequest { Greeting greeting = 1; }
 
 message GreetResponse { string result = 1; }
 
+message GreetManyRequest { Greeting greeting = 1; }
+
+message GreetManyResponse { string result = 1; }
+
 service GreetService {
   // Unary
   rpc Greet(GreetRequest) returns (GreetResponse) {};
+
+  // Server streaming
+  rpc GreetMany(GreetManyRequest) returns (stream GreetManyResponse) {};
 }
