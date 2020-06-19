@@ -20,6 +20,24 @@ func (*server) Sum(ctx context.Context, req *calculatorpb.SumRequest) (*calculat
 	return res, nil
 }
 
+func (*server) PrimeNum(req *calculatorpb.PrimeNumRequest, stream calculatorpb.SumService_PrimeNumServer) error {
+	fmt.Println("prime called...")
+	number := req.GetValue()
+	var n int32 = 2
+	for number > 1 {
+		if number%n == 0 {
+			err := stream.Send(&calculatorpb.PrimeNumResponse{Value: n})
+			if err != nil {
+				log.Fatalf("Not able to send response")
+			}
+			number /= n
+			continue
+		}
+		n++
+	}
+	return nil
+}
+
 func main() {
 	fmt.Println("Hello world")
 

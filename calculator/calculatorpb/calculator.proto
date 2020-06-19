@@ -13,7 +13,14 @@ message SumRequest { Values value = 1; }
 
 message SumResponse { int32 sum = 1; }
 
+message PrimeNumRequest { int32 value = 1; }
+
+message PrimeNumResponse { int32 value = 1; }
+
 service SumService {
-  // unary
+  // Unary
   rpc Sum(SumRequest) returns (SumResponse) {};
+
+  // Server Streaming
+  rpc PrimeNum(PrimeNumRequest) returns (stream PrimeNumResponse) {};
 }
