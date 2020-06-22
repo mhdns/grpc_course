@@ -22,7 +22,45 @@ func main() {
 	c := greetpb.NewGreetServiceClient(conn)
 
 	// doUnary(c)
-	doServerStream(c)
+	// doServerStream(c)
+	doClientStreaming(c)
+}
+
+func doClientStreaming(c greetpb.GreetServiceClient) {
+	stream, err := c.LongGreet(context.Background())
+
+	req := []*greetpb.LongGreetRequest{
+		{
+			Greeting: &greetpb.Greeting{
+				FirstName: "Anas",
+			},
+		},
+		{
+			Greeting: &greetpb.Greeting{
+				FirstName: "Nashath",
+			},
+		},
+		{
+			Greeting: &greetpb.Greeting{
+				FirstName: "Inaya",
+			},
+		},
+	}
+
+	if err != nil {
+		log.Fatalln("Unable to connect to server...")
+	}
+
+	for _, v := range req {
+		stream.Send(v)
+	}
+
+	res, err := stream.CloseAndRecv()
+	if err != nil {
+		log.Fatalln("Error while recieving response...")
+	}
+
+	fmt.Println(res.GetResult())
 }
 
 func doServerStream(c greetpb.GreetServiceClient) {
