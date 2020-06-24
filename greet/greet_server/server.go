@@ -54,6 +54,23 @@ func (*server) LongGreet(stream greetpb.GreetService_LongGreetServer) error {
 	}
 }
 
+func (*server) GreetEveryone(stream greetpb.GreetService_GreetEveryoneServer) error {
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		} else if err != nil {
+			log.Fatalln("Unable te recieve client stream")
+			return err
+		}
+		firstName := req.GetGreeting().GetFirstName()
+		err = stream.Send(&greetpb.GreetEveryoneResponse{Result: fmt.Sprintf("Hello %v!\n", firstName)})
+		if err != nil {
+			log.Fatalln("Unable te send to client")
+		}
+	}
+}
+
 func main() {
 	fmt.Println("Hello world")
 

@@ -6,6 +6,7 @@ import (
 	"grpc_course/greet/greetpb"
 	"io"
 	"log"
+	"time"
 
 	"google.golang.org/grpc"
 )
@@ -23,7 +24,67 @@ func main() {
 
 	// doUnary(c)
 	// doServerStream(c)
-	doClientStreaming(c)
+	// doClientStreaming(c)
+	doBiDiStreaming(c)
+}
+
+func doBiDiStreaming(c greetpb.GreetServiceClient) {
+
+	req := []*greetpb.GreetEveryoneRequest{
+		{
+			Greeting: &greetpb.Greeting{
+				FirstName: "Anas",
+			},
+		},
+		{
+			Greeting: &greetpb.Greeting{
+				FirstName: "Nashath",
+			},
+		},
+		{
+			Greeting: &greetpb.Greeting{
+				FirstName: "Inaya",
+			},
+		},
+	}
+
+	stream, err := c.GreetEveryone(context.Background())
+	if err != nil {
+		log.Fatalln("Error while creating stream")
+		return
+	}
+
+	waitc := make(chan int)
+	// Send Stream
+	go func() error {
+		for _, r := range req {
+			err := stream.Send(r)
+			if err != nil {
+				return err
+			}
+			time.Sleep(time.Second)
+		}
+		return stream.CloseSend()
+	}()
+
+	// Recv Stream
+	go func() error {
+		for {
+			res, err := stream.Recv()
+			if err == io.EOF {
+				close(waitc)
+				return nil
+			} else if err != nil {
+				log.Fatalln("Error while recieving...")
+				close(waitc)
+				return err
+			}
+			fmt.Println("Recieved: ", res.GetResult())
+		}
+	}()
+
+	<-waitc
+
 }
 
 func doClientStreaming(c greetpb.GreetServiceClient) {
