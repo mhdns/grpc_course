@@ -19,17 +19,42 @@ func main() {
 	}
 	defer conn.Close()
 
+	// Unary
 	// fmt.Println(sum(conn, 5, 6))
 
-	results := make(chan int32)
+	// Server Streaming
+	// results := make(chan int32)
 
-	go primeNum(conn, 1847198980, results)
+	// go primeNum(conn, 1847198980, results)
 
-	for v := range results {
-		// time.Sleep(time.Second)
-		fmt.Println(v)
+	// for v := range results {
+	// 	// time.Sleep(time.Second)
+	// 	fmt.Println(v)
+	// }
+
+	// Client streaming
+	fmt.Println(averageAge(conn, []int32{31, 42, 12, 19}))
+
+}
+
+func averageAge(conn *grpc.ClientConn, ages []int32) (int32, error) {
+	c := calculatorpb.NewSumServiceClient(conn)
+
+	stream, err := c.AverageAge(context.Background())
+	if err != nil {
+		return 0, nil
 	}
 
+	for _, v := range ages {
+		stream.Send(&calculatorpb.AverageAgeRequest{Value: v})
+	}
+
+	res, err := stream.CloseAndRecv()
+	if err != nil {
+		log.Fatalln("Error while recieving response...")
+	}
+
+	return res.GetValue(), nil
 }
 
 func primeNum(conn *grpc.ClientConn, v1 int32, results chan int32) {

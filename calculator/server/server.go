@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"grpc_course/calculator/calculatorpb"
+	"io"
 	"log"
 	"net"
 
@@ -36,6 +37,23 @@ func (*server) PrimeNum(req *calculatorpb.PrimeNumRequest, stream calculatorpb.S
 		n++
 	}
 	return nil
+}
+
+func (*server) AverageAge(stream calculatorpb.SumService_AverageAgeServer) error {
+	ages := []int32{}
+	for {
+		msg, err := stream.Recv()
+		if err == io.EOF {
+			var total int32 = 0
+			for _, v := range ages {
+				total += v
+			}
+			return stream.SendAndClose(&calculatorpb.AverageAgeResponse{Value: total / int32(len(ages))})
+		} else if err != nil {
+			log.Fatalln("Unable to recieve stream")
+		}
+		ages = append(ages, msg.GetValue())
+	}
 }
 
 func main() {

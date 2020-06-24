@@ -17,10 +17,17 @@ message PrimeNumRequest { int32 value = 1; }
 
 message PrimeNumResponse { int32 value = 1; }
 
+message AverageAgeRequest { int32 value = 1; }
+
+message AverageAgeResponse { int32 value = 1; }
+
 service SumService {
   // Unary
   rpc Sum(SumRequest) returns (SumResponse) {};
 
   // Server Streaming
   rpc PrimeNum(PrimeNumRequest) returns (stream PrimeNumResponse) {};
+
+  // Client Streaming
+  rpc AverageAge(stream AverageAgeRequest) returns (AverageAgeResponse) {};
 }
