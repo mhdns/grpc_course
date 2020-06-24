@@ -6,6 +6,7 @@ import (
 	"grpc_course/calculator/calculatorpb"
 	"io"
 	"log"
+	"time"
 
 	"google.golang.org/grpc"
 )
@@ -73,6 +74,7 @@ func findMax(conn *grpc.ClientConn, values []int32) chan int32 {
 			} else if err != nil {
 				log.Fatalln("Unable to recieve value")
 			}
+			time.Sleep(time.Second)
 			result <- res.GetValue()
 		}
 	}(result)

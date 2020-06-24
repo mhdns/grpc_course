@@ -57,7 +57,7 @@ func (*server) AverageAge(stream calculatorpb.SumService_AverageAgeServer) error
 }
 
 func (*server) FindMax(stream calculatorpb.SumService_FindMaxServer) error {
-	maxVal := 0
+	maxVal := int32(0)
 	firstVal := true
 	for {
 		req, err := stream.Recv()
@@ -66,17 +66,23 @@ func (*server) FindMax(stream calculatorpb.SumService_FindMaxServer) error {
 		} else if err != nil {
 			return err
 		}
-		value := int(req.GetValue())
+		value := req.GetValue()
 		if firstVal {
 			maxVal = value
 			firstVal = false
-		} else if maxVal < value {
-			maxVal = value
+			err = stream.Send(&calculatorpb.FindMaxResponse{Value: int32(maxVal)})
+			if err != nil {
+				return err
+			}
+			continue
 		}
 
-		err = stream.Send(&calculatorpb.FindMaxResponse{Value: int32(maxVal)})
-		if err != nil {
-			return err
+		if maxVal < value {
+			maxVal = value
+			err = stream.Send(&calculatorpb.FindMaxResponse{Value: int32(maxVal)})
+			if err != nil {
+				return err
+			}
 		}
 	}
 }
