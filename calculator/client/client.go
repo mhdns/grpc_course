@@ -33,8 +33,51 @@ func main() {
 	// }
 
 	// Client streaming
-	fmt.Println(averageAge(conn, []int32{31, 42, 12, 19}))
+	//fmt.Println(averageAge(conn, []int32{31, 42, 12, 19}))
 
+	// Bidi Streaming
+	results := findMax(conn, []int32{1, 2, 10, 6, 5, 9, 21, 24, 22, 11, 50})
+
+	for v := range results {
+		fmt.Println("Recieved: ", v)
+	}
+}
+
+func findMax(conn *grpc.ClientConn, values []int32) chan int32 {
+	c := calculatorpb.NewSumServiceClient(conn)
+	result := make(chan int32)
+
+	stream, err := c.FindMax(context.Background())
+	if err != nil {
+		log.Fatalln("Unable to create stream")
+	}
+
+	// Send stream
+	go func() {
+		for _, v := range values {
+			err = stream.Send(&calculatorpb.FindMaxRequest{Value: v})
+			if err != nil {
+				log.Fatalln("Unable to send value")
+			}
+		}
+		stream.CloseSend()
+	}()
+
+	// Recv stream
+	go func(result chan int32) {
+		for {
+			res, err := stream.Recv()
+			if err == io.EOF {
+				close(result)
+				return
+			} else if err != nil {
+				log.Fatalln("Unable to recieve value")
+			}
+			result <- res.GetValue()
+		}
+	}(result)
+
+	return result
 }
 
 func averageAge(conn *grpc.ClientConn, ages []int32) (int32, error) {

@@ -21,6 +21,10 @@ message AverageAgeRequest { int32 value = 1; }
 
 message AverageAgeResponse { int32 value = 1; }
 
+message FindMaxRequest { int32 value = 1; }
+
+message FindMaxResponse { int32 value = 1; }
+
 service SumService {
   // Unary
   rpc Sum(SumRequest) returns (SumResponse) {};
@@ -30,4 +34,7 @@ service SumService {
 
   // Client Streaming
   rpc AverageAge(stream AverageAgeRequest) returns (AverageAgeResponse) {};
+
+  // BiDi Streaming
+  rpc FindMax(stream FindMaxRequest) returns (stream FindMaxResponse) {};
 }
